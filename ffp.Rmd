@@ -8,6 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(igraph)
 library(ggraph)
+library(networkD3)
 ```
 
 L'obiettivo della seguente analisi è quello di osservare ciò che è successo nel mercato calcistico dall'introduzione del cosiddetto **Fair play finanziario** ad oggi. Tale sistema nelle intenzioni avrebbe dovuto ridurre gli effetti delle disparità economiche tra le differenti società evitando così il monopolio "competitivo" di poche squadre. Tuttavia l'impressione è che in realtà la forbice tra le società più ricche e quelle meno ricche si stia allargando sia in termini competitivi che in termini economici.
@@ -108,7 +109,7 @@ clubs<-clubs%>%arrange(country_simplified)
 ffp<-graph_from_data_frame(aggregate, directed = TRUE,vertices=clubs)
 ```
 
-#Visualizzazione grafo
+##Visualizzazione grafo
 
 ```{r}
 lay = create_layout(ffp, layout = "linear",circular=TRUE)
@@ -165,7 +166,7 @@ base+
 
 Mentre la composizione dell'insieme delle authority rispecchia quanto atteso, lo stesso non si può dire di quello degli hub. Notiamo infatti come ci siano diverse squadre che appartengono ad entrabmi gli insiemi. Intuitivamente le squadre che si trovano in entrambi gli insiemi sono quelle che hanno un forte potere d'acquisto ma che contemporaneamente riescono a vendere alcuni dei propri giocatori ad altre authority e/o a prezzi elevati. 
 
-# Entrate ed uscite per club
+## Entrate ed uscite per club
 ```{r spenders}
 # spesa totale squadre
 spenders<-aggregate%>%group_by(to)%>%
@@ -271,7 +272,7 @@ aggregate%>%
   head(n=10)
 ```
 
-# Spesa per paese
+## Spesa per paese
 
 ```{r internal foreign}
 # Calcolo mercato interno per paese
@@ -316,11 +317,12 @@ nodes <- data.frame(name=c(as.character(market_flow$country_from),as.character(m
 
 market_flow$IDfrom=match(market_flow$country_from, nodes$name)-1 
 market_flow$IDto=match(market_flow$country_to, nodes$name)-1
-library(networkD3)
+ColourScal ='d3.scaleOrdinal() .range(["red","green","yellow","violet","navy","orange","pink","cyan","turquoise"])'
+#colourScale =ColourScal
 sankeyNetwork(Links = market_flow, Nodes = nodes,
               Source = "IDfrom", Target = "IDto",
               Value = "flow", NodeID = "name", 
-              sinksRight=FALSE, nodeWidth=40, fontSize=13, nodePadding=20)
+              sinksRight=FALSE,colourScale =ColourScal,nodeWidth=40, fontSize=13, nodePadding=20)
 ```
 
 Notiamo come la disparità che è veniva riscontrata a livello di squadre sia ancora più accentuata se osserviamo il mercato a livello di paesi. 
@@ -331,7 +333,7 @@ L'ipotesi che viene fatta è che nel grafo ci siano:
 1. una componente fortemente connessa (SCC) di grandi dimensioni al centro del grafo composta da maggior parte delle squadre europee
 2. una *in component* associata e composta soprattutto da squadre extra-europee che fornisce giocatori alla SCC
 3. una *out component* associata e composta soprattutto da squadre extra-europee che riceve giocatori dalla SCC
-L'ipotesi è dunque che la struttura del grafo sia simile a quella a *bow-tie* del grafo del web ed osservata da [Broder et.al] (#<https://www.cis.upenn.edu/~mkearns/teaching/NetworkedLife/broder.pdf>) ![Grafo del Web](webgraph.png)
+L'ipotesi è dunque che la struttura del grafo sia simile a quella a *bow-tie* del grafo del web ed osservata da [Broder et.al](https://www.cis.upenn.edu/~mkearns/teaching/NetworkedLife/broder.pdf) ![Grafo del Web](webgraph.png)
 ```{r structure}
 is_connected(ffp,mode="strong")
 #componenti fortemente connesse
