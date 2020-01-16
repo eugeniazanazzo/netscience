@@ -6,20 +6,20 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache=FALSE, fig.align='center', message = FALSE)
 library(tidyverse)
 library(igraph)
 library(ggraph)
 library(networkD3)
 ```
 
-L'obiettivo della seguente analisi è quello di osservare ciò che è successo nel mercato calcistico dall'introduzione del cosiddetto **Fair play finanziario** ad oggi. Tale sistema nelle intenzioni avrebbe dovuto ridurre gli effetti delle disparità economiche tra le differenti società evitando così il monopolio "competitivo" di poche squadre. Tuttavia l'impressione è che in realtà la forbice tra le società più ricche e quelle meno ricche si stia allargando sia in termini competitivi che in termini economici.
+L'obiettivo della seguente analisi è di riassumere ed analizzare i pattern osservati nel mercato calcistico dall'introduzione del cosiddetto **Fair play finanziario** ad oggi. Tale sistema nelle intenzioni avrebbe dovuto ridurre gli effetti delle disparità economiche tra le differenti società evitando così il monopolio "competitivo" di poche squadre. Tuttavia l'impressione è che in realtà la forbice tra le società più ricche e quelle meno ricche si stia allargando sia in termini competitivi che in termini economici.
 
 ## Dataset
-Per effettuare l' analisi sono stati utilizzati due file `transfers.csv` e `dict_clubs.csv`che contengono, rispettivamente, tutti i trasferimenti dal 1984 in poi e tutte le squadre coinvolte nei suddetti trasferimenti. Il database completo è disponibile su Kaggle <https://bit.ly/2R59FFW>.
+Per effettuare l'analisi sono stati utilizzati due file `transfers.csv` e `dict_clubs.csv` che contengono, rispettivamente, tutti i trasferimenti dal 1984 in poi e tutte le squadre coinvolte nei suddetti trasferimenti. Il database completo è disponibile su Kaggle <https://bit.ly/2R59FFW>.
 
 ## Data challenges
-1. Quali sono le squadre *hub* e quali sono le squadre *authority* nel sistema attuale?
+1. Quali sono le squadre *hub* e quali sono le squadre *authority* con il sistema attuale?
 2. La rete è assortativa per paese?
 3. E' possibile trovare similarità tra la struttura del nostro grafo e quella del grafo del web?
 
@@ -121,9 +121,9 @@ ggraph(lay) +
   geom_node_point(aes(color=country_simplified))
 ```
 
-# 1. Quali sono le squadre *hub* e quali sono le squadre *authority* nel sistema attuale?
+# 1. Quali sono le squadre *hub* e quali sono le squadre *authority* con il sistema attuale?
 
-Ipotizziamo che le authority all'interno della rete siano squadre più ricche (ad esempio Manchester City o PSG). Per quanto riguarda gli `hub`, ci aspettiamo di trovare squadre di prestigio inferiore rispetto a quello delle authority, ma comunque in grado di attrarre giocatori di un certo livello che potrebbero essere in futuro "appetibili" per le squadre più importanti.
+Ipotizziamo che le **authority** all'interno della rete siano squadre più ricche (ad esempio Manchester City o PSG). Per quanto riguarda gli **hub**, ci aspettiamo di trovare squadre di prestigio inferiore rispetto a quello delle authority, ma comunque in grado di attrarre giocatori di un certo livello che potrebbero essere in futuro "appetibili" per le squadre più importanti.
 
 ```{r hits_scores}
 predators<-authority_score(ffp)$vector%>%round(3)
@@ -166,7 +166,7 @@ base+
   scale_y_continuous(expand = c(0, 0),limits =c(0,1.01))
 ```
 
-Mentre la composizione dell'insieme delle authority rispecchia quanto atteso, lo stesso non si può dire di quello degli hub. Notiamo infatti come ci siano diverse squadre che appartengono ad entrabmi gli insiemi. Intuitivamente le squadre che si trovano in entrambi gli insiemi sono quelle che hanno un forte potere d'acquisto ma che contemporaneamente riescono a vendere alcuni dei propri giocatori ad altre authority e/o a prezzi elevati. 
+Mentre la composizione dell'insieme delle authority rispecchia quanto atteso, lo stesso non si può dire di quello degli hub. Notiamo infatti come ci siano diverse squadre che appartengono ad entrambi gli insiemi. Intuitivamente le squadre che si trovano in entrambi gli insiemi sono quelle che hanno un forte potere d'acquisto ma che contemporaneamente riescono a vendere alcuni dei propri giocatori ad altre authority e/o a prezzi elevati. 
 
 ## Entrate ed uscite per club
 ```{r spenders}
@@ -207,7 +207,7 @@ girafe(code = print(scatter))
 
 ```
 
-Anche osservando le entrate ed uscite in termini assoluti possiamo notare come ci sia una grande disparità tra un piccolo numero di squadre e tutte le altre sia in termini di entrate che, più sorprendentementente, in termini di uscite. Questa osservazione suggerisce che si stia correndo il rischio di creare due mercati paralleli: uno in cui i migliori hub e le migliori authority scambiano giocatori a prezzi elevati, l'altro in cui i giocatori vengono scambiati a prezzi molto inferiori e dal quale hub ed authority riescono a "pescare" talenti a poco prezzo.
+Anche osservando le entrate ed uscite in termini assoluti possiamo notare come ci sia una grande disparità tra un piccolo numero di squadre e tutte le altre sia in termini di entrate che, più sorprendentementente, in termini di uscite. Questa osservazione suggerisce che si stia correndo il rischio di creare due mercati paralleli: uno in cui le migliori authority scambiano comprano giocatori a prezzi elevati dai migliori hub, l'altro in cui i giocatori vengono scambiati a prezzi molto inferiori e dal quale hub ed authority riescono a "pescare" talenti a prezzi relativamente bassi.
 
 #2. La rete è assortativa per paese?
 
@@ -254,8 +254,7 @@ modularity(ffp_ind, membership = country,weights=E(ffp_ind)$number)
 ```
 Possiamo quindi confermare che le squadre preferiscano, o debbano, concludere i trasferimenti con squadre del proprio paese piuttosto che con squadre di paesi diversi. 
 
-Andiamo ad analizzare quali sono le relazioni preferenziali che possono essere osservate sul mercato
-
+Andiamo adesso ad analizzare quali sono le relazioni preferenziali che possono essere osservate sul mercato
 ```{r}
 clubsimple<-clubs%>%select(id,name)
 # top 10 coppie di squadre tra le quali ci sono gli archi più pesanti
@@ -332,20 +331,22 @@ Notiamo come la disparità che è veniva riscontrata a livello di squadre sia an
 #3. E' possibile trovare similarità tra la forma del grafo e quella del grafo del web?
 
 L'ipotesi che viene fatta è che nel grafo ci siano:
-1. una componente fortemente connessa (SCC) di grandi dimensioni al centro del grafo composta da maggior parte delle squadre europee
-2. una *in component* associata e composta soprattutto da squadre extra-europee che fornisce giocatori alla SCC
-3. una *out component* associata e composta soprattutto da squadre extra-europee che riceve giocatori dalla SCC
+
+1. una componente fortemente connessa (*SCC*) di grandi dimensioni al centro del grafo composta da maggior parte delle squadre europee
+2. una *in component* associata e composta soprattutto da squadre extra-europee che fornisce giocatori alla *SCC*
+3. una *out component* associata e composta soprattutto da squadre extra-europee che riceve giocatori dalla *SCC*
+
 L'ipotesi è dunque che la struttura del grafo sia simile a quella a *bow-tie* del grafo del web ed osservata da [Broder et.al](https://www.cis.upenn.edu/~mkearns/teaching/NetworkedLife/broder.pdf) ![Grafo del Web](webgraph.png)
 ```{r structure}
 is_connected(ffp,mode="strong")
-#componenti fortemente connesse
 c<-components(ffp,mode="strong")
+# SCC massima
 inside<-which(c$membership == which.max(c$csize))
 clubs_scc<-clubs[inside,c("name","country_id")]
 count(clubs_scc,country_id)%>%arrange(-n)
-#dimensione SCC
+# dimensione SCC
 (scc_size<-length(inside))
-#bfs dalla scc ad i nodi in "out""
+# bfs dalla scc ad i nodi in "out""
 scc_bfs<-graph.bfs(ffp, root=inside, neimode="out",
           unreachable=FALSE)
 reachable <- na.omit(scc_bfs$order)
@@ -353,6 +354,7 @@ reachable <- na.omit(scc_bfs$order)
 out_comp <- setdiff(reachable, inside)
 clubs_out<-clubs[out_comp,c("name","country_id")]
 count(clubs_out,country_id)%>%arrange(-n)
+# dimensione out_component
 (out_size<-length(out_comp))
 all<-V(ffp)
 #bfs dalla scc ad i nodi in "in""
@@ -361,9 +363,9 @@ scc_bfs2<-graph.bfs(ffp, root=inside, neimode="in",
 reachable <- na.omit(scc_bfs2$order)
 # in_component
 in_comp <- setdiff(reachable, inside)
-(clubs_in<-clubs[in_comp,c("name","country_id")])
+clubs_in<-clubs[in_comp,c("name","country_id")]
 count(clubs_in,country_id)%>%arrange(-n)
-clubs_in%>%pull(name)
+#dimensione in_component
 (in_size<-length(in_comp))
 # total=tutti i nodi in scc/in/out
 total<-union(in_comp,out_comp)
@@ -375,18 +377,22 @@ iso_bfs<-graph.bfs(ffp, root=in_comp, neimode="out",
                    unreachable=FALSE)
 reachable <- na.omit(iso_bfs$order)
 # tendils uscenti da "in"
-setdiff(reachable,total)
+tendils_in<-setdiff(reachable,total)
+V(ffp)[tendils_in]
 iso_bfs2<-graph.bfs(ffp, root=out_comp, neimode="in",
                    unreachable=FALSE)
 reachable <- na.omit(iso_bfs2$order)
 # tendils entranti in "out"
 tendils_out<-setdiff(reachable,total)
+V(ffp)[tendils_out]
+#somma vertici nelle diverse componenti
+sum(out_size,scc_size,in_size,iso_size)
 # associamo ad ogni componente una membership
 V(ffp)[inside]$membership=1
 V(ffp)[in_comp]$membership=2
 V(ffp)[out_comp]$membership=3
 V(ffp)[isolated]$membership=4
-sum(out_size,scc_size,in_size,iso_size)
+
 ```
 ```{r structure graph}
 # contraiamo i vertici in base alla loro membership
@@ -394,8 +400,14 @@ g3<-contract(ffp,V(ffp)$membership)%>%simplify()
 V(g3)$label=c("SCC","IN","OUT","TENDRILS")
 coord<-layout_as_star(g3,order=c(3,1,4,2))
 plot(g3,vertex.label=V(g3)$label,layout = coord,
-     vertex.shape = c("circle",rep("square",4)),vertex.size=80,curved=TRUE)
+     vertex.shape = c("circle",rep("square",4)),vertex.size=80)
 ```
 
-Nonostante la forma della nostra rete sia riconducibile a quella del grafo del web, notiamo come non ci sia la stessa regolarità nelle dimensioni delle varie componenti. Infatti la SCC ha meno nodi rispetto alla sua *in-component*, mentre l' *out-component* è composta da soli 32 nodi.
-Contrariamente a quanto atteso l'*in-component* è composta principalmente da squadre europee e non da squadre extra-europee come avevamo ipotizzato. Queste sono squadre la cui posizione è meno consolidat L'*out-component*
+Nonostante la forma della nostra rete sia riconducibile a quella del grafo del web, notiamo come non ci sia la stessa regolarità nelle dimensioni delle varie componenti. Infatti la *SCC* ha meno nodi (seppur di poco) rispetto alla sua *in-component*, mentre l' *out-component* è composta da soli 32 nodi.
+```{r components membership}
+clubs_scc
+clubs_in
+clubs_out
+```
+
+Mentre l'*SCC* e l'*out-component* mostrano una composizione simile a quella ipotizzata, l'*in-component* è composta principalmente da squadre europee,contrariamente a quanto atteso. In generale possiamo dire che le squadre che si trovano nella *SCC* sono quelle la cui posizione è consolidata, mentre le squadre nella *in-component* (spesso soggette a retrocessioni) sono quelle la cui posizione è incerta. L'*out-component* è invece composta da squadre extra-europee che hanno le risorse necessarie per attrarre giocatori (spesso verso la fine della loro carriera) che militano in squadre nella *SCC*
