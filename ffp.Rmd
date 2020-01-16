@@ -1,6 +1,8 @@
 ---
 title: "Financial Fair Play"
-output: html_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -396,4 +398,4 @@ plot(g3,vertex.label=V(g3)$label,layout = coord,
 ```
 
 Nonostante la forma della nostra rete sia riconducibile a quella del grafo del web, notiamo come non ci sia la stessa regolarità nelle dimensioni delle varie componenti. Infatti la SCC ha meno nodi rispetto alla sua *in-component*, mentre l' *out-component* è composta da soli 32 nodi.
-Notiamo inoltre come le ipotesi che avevamo fatto sulla composizione dell'*in-component* sia sbagliata. L'*in-component* è infatti è composta principalmente da squadre europee e non da squadre extra-europee come avevamo ipotizzato. Queste sono squadre la cui posizione è meno consolidat L'*out-component*
+Contrariamente a quanto atteso l'*in-component* è composta principalmente da squadre europee e non da squadre extra-europee come avevamo ipotizzato. Queste sono squadre la cui posizione è meno consolidat L'*out-component*
